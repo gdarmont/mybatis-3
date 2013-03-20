@@ -18,6 +18,7 @@ package com.ibatis.sqlmap.engine.builder;
 import com.ibatis.sqlmap.client.SqlMapException;
 import com.ibatis.sqlmap.engine.impl.SqlMapSessionImpl;
 import org.apache.ibatis.cache.Cache;
+import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.type.TypeHandler;
@@ -52,6 +53,7 @@ public class XmlSqlStatementParser {
     String resultSetType = context.getStringAttribute("resultSetType");
     String fetchSize = context.getStringAttribute("fetchSize");
     String timeout = context.getStringAttribute("timeout");
+    String resultSetHandlerClass = context.getStringAttribute("resultSetHandlerClass");
     // 2.x -- String allowRemapping = context.getStringAttribute("remapResults");
 
     if (context.getStringAttribute("xmlResultName") != null) {
@@ -145,6 +147,14 @@ public class XmlSqlStatementParser {
     builder.fetchSize(fetchSizeInt);
 
     builder.timeout(timeoutInt);
+
+    if (resultSetHandlerClass != null && resultSetHandlerClass.length() != 0) {
+      try {
+        builder.resultSetHandlerClass((Class<? extends ResultSetHandler>) Resources.classForName(resultSetHandlerClass));
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException("Error loading result set handler class.  Cause: " + e, e);
+      }
+    }
 
     if (cacheModelName != null) {
       cacheModelName = mapParser.applyNamespace(cacheModelName);

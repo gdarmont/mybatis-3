@@ -15,6 +15,8 @@
  */
 package org.apache.ibatis.session;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -438,10 +440,32 @@ public class Configuration {
 
   public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds, ParameterHandler parameterHandler,
       ResultHandler resultHandler, BoundSql boundSql) {
-    ResultSetHandler resultSetHandler = mappedStatement.hasNestedResultMaps() ? new NestedResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql,
-        rowBounds) : new FastResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
+    ResultSetHandler resultSetHandler = createResultSetHandler(executor, mappedStatement, rowBounds, parameterHandler, resultHandler, boundSql);
     resultSetHandler = (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
     return resultSetHandler;
+  }
+
+  private ResultSetHandler createResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds, ParameterHandler parameterHandler, ResultHandler resultHandler, BoundSql boundSql) {
+    Class<? extends ResultSetHandler> ressultSetHandlerClazz = mappedStatement.getResultSetHandlerClass();
+
+    if (ressultSetHandlerClazz != null) {
+      try {
+        Constructor<? extends ResultSetHandler> resultSetHandlerConstructor = ressultSetHandlerClazz.getConstructor(Executor.class, MappedStatement.class, ParameterHandler.class, ResultHandler.class, BoundSql.class, RowBounds.class);
+        ResultSetHandler resultSetHandler = resultSetHandlerConstructor.newInstance(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
+        return resultSetHandler;
+      } catch (NoSuchMethodException e) {
+        throw new RuntimeException("Unable to find required constructor for ResultSetHandler " + ressultSetHandlerClazz.toString(), e);
+      } catch (InvocationTargetException e) {
+        throw new RuntimeException("Caught exception while create ResultSetHandler " + ressultSetHandlerClazz.toString(), e);
+      } catch (InstantiationException e) {
+        throw new RuntimeException("Unable to create ResultSetHandler " + ressultSetHandlerClazz.toString(), e);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException("Unable to create create ResultSetHandler " + ressultSetHandlerClazz.toString(), e);
+      }
+    }
+
+    return mappedStatement.hasNestedResultMaps() ? new NestedResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql,
+            rowBounds) : new FastResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
   }
 
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {

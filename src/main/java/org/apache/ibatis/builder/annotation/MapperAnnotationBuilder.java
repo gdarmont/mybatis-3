@@ -64,6 +64,7 @@ import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
 import org.apache.ibatis.executor.keygen.SelectKeyGenerator;
+import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.Discriminator;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -251,6 +252,8 @@ public class MapperAnnotationBuilder {
       boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
       boolean flushCache = !isSelect;
       boolean useCache = isSelect;
+      // TODO Retrive ResultSetHandler from @Options
+      Class<ResultSetHandler> resultSetHandlerClass = null;
 
       KeyGenerator keyGenerator;
       String keyProperty = "id";
@@ -310,7 +313,7 @@ public class MapperAnnotationBuilder {
           keyProperty,
           keyColumn,
           null,
-          languageDriver);
+          languageDriver, resultSetHandlerClass);
     }
   }
   
@@ -541,8 +544,8 @@ public class MapperAnnotationBuilder {
     SqlCommandType sqlCommandType = SqlCommandType.SELECT;
 
     assistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType, fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass, resultSetTypeEnum,
-        flushCache, useCache, false,
-        keyGenerator, keyProperty, null, null, languageDriver);
+        flushCache, useCache, false, // TODO issue #577
+        keyGenerator, keyProperty, null, null, languageDriver, null);
 
     id = assistant.applyCurrentNamespace(id, false);
 

@@ -24,6 +24,8 @@ import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
 import org.apache.ibatis.executor.keygen.SelectKeyGenerator;
+import org.apache.ibatis.executor.resultset.ResultSetHandler;
+import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultSetType;
 import org.apache.ibatis.mapping.SqlCommandType;
@@ -106,10 +108,21 @@ public class XMLStatementBuilder extends BaseBuilder {
           ? new Jdbc3KeyGenerator() : new NoKeyGenerator();
     }
 
+
+    String resultSetHandler = context.getStringAttribute("resultSetHandlerClass");
+    Class<? extends ResultSetHandler> resultSetHandlerClass = null;
+    if (resultSetHandler != null && resultSetHandler.length() != 0) {
+      try {
+        resultSetHandlerClass = (Class<? extends ResultSetHandler>) Resources.classForName(resultSetHandler);
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException("Error loading result set handler class.  Cause: " + e, e);
+      }
+    }
+
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered, 
-        keyGenerator, keyProperty, keyColumn, databaseId, langDriver);
+        keyGenerator, keyProperty, keyColumn, databaseId, langDriver, resultSetHandlerClass);
   }
   
   public void parseSelectKeyNodes(String parentId, List<XNode> list, Class<?> parameterTypeClass, LanguageDriver langDriver, String skRequiredDatabaseId) {
@@ -146,7 +159,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered,
-        keyGenerator, keyProperty, null, databaseId, langDriver);
+        keyGenerator, keyProperty, null, databaseId, langDriver, null);
 
     id = builderAssistant.applyCurrentNamespace(id, false);
 

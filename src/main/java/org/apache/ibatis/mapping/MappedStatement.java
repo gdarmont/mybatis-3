@@ -23,6 +23,7 @@ import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
+import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.scripting.LanguageDriver;
@@ -52,6 +53,7 @@ public final class MappedStatement {
   private String databaseId;
   private Log statementLog;
   private LanguageDriver lang;
+  private Class<? extends ResultSetHandler> resultSetHandlerClass;
 
   private MappedStatement() {
     // constructor disabled
@@ -163,6 +165,11 @@ public final class MappedStatement {
       return this;
     }
 
+    public Builder resultSetHandlerClass(Class<? extends ResultSetHandler> resultSetHandlerClass) {
+      mappedStatement.resultSetHandlerClass = resultSetHandlerClass;
+      return this;
+    }
+
     public MappedStatement build() {
       assert mappedStatement.configuration != null;
       assert mappedStatement.id != null;
@@ -259,6 +266,10 @@ public final class MappedStatement {
 
   public LanguageDriver getLang() {
     return lang;
+  }
+
+  public Class<? extends ResultSetHandler> getResultSetHandlerClass() {
+    return resultSetHandlerClass;
   }
 
   public BoundSql getBoundSql(Object parameterObject) {
