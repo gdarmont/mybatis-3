@@ -252,6 +252,7 @@ public class MapperAnnotationBuilder {
       boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
       boolean flushCache = !isSelect;
       boolean useCache = isSelect;
+      boolean lazy = false;
       // TODO Retrive ResultSetHandler from @Options
       Class<ResultSetHandler> resultSetHandlerClass = null;
 
@@ -284,6 +285,7 @@ public class MapperAnnotationBuilder {
         timeout = options.timeout() > -1 ? options.timeout() : null;
         statementType = options.statementType();
         resultSetType = options.resultSetType();
+        lazy = options.lazy();
       }
 
       String resultMapId = null;
@@ -313,7 +315,7 @@ public class MapperAnnotationBuilder {
           keyProperty,
           keyColumn,
           null,
-          languageDriver, resultSetHandlerClass);
+          languageDriver, lazy);
     }
   }
   
@@ -545,7 +547,7 @@ public class MapperAnnotationBuilder {
 
     assistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType, fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass, resultSetTypeEnum,
         flushCache, useCache, false, // TODO issue #577
-        keyGenerator, keyProperty, null, null, languageDriver, null);
+        keyGenerator, keyProperty, null, null, languageDriver, false);
 
     id = assistant.applyCurrentNamespace(id, false);
 

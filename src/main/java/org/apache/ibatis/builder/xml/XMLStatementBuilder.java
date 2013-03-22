@@ -79,6 +79,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     boolean flushCache = context.getBooleanAttribute("flushCache", !isSelect);
     boolean useCache = context.getBooleanAttribute("useCache", isSelect);
     boolean resultOrdered = context.getBooleanAttribute("resultOrdered", false);
+    boolean lazy = context.getBooleanAttribute("lazy", false);
 
     // Include Fragments before parsing
     XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
@@ -108,21 +109,10 @@ public class XMLStatementBuilder extends BaseBuilder {
           ? new Jdbc3KeyGenerator() : new NoKeyGenerator();
     }
 
-
-    String resultSetHandler = context.getStringAttribute("resultSetHandlerClass");
-    Class<? extends ResultSetHandler> resultSetHandlerClass = null;
-    if (resultSetHandler != null && resultSetHandler.length() != 0) {
-      try {
-        resultSetHandlerClass = (Class<? extends ResultSetHandler>) Resources.classForName(resultSetHandler);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException("Error loading result set handler class.  Cause: " + e, e);
-      }
-    }
-
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered, 
-        keyGenerator, keyProperty, keyColumn, databaseId, langDriver, resultSetHandlerClass);
+        keyGenerator, keyProperty, keyColumn, databaseId, langDriver, lazy);
   }
   
   public void parseSelectKeyNodes(String parentId, List<XNode> list, Class<?> parameterTypeClass, LanguageDriver langDriver, String skRequiredDatabaseId) {
@@ -159,7 +149,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered,
-        keyGenerator, keyProperty, null, databaseId, langDriver, null);
+        keyGenerator, keyProperty, null, databaseId, langDriver, false);
 
     id = builderAssistant.applyCurrentNamespace(id, false);
 

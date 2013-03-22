@@ -53,7 +53,7 @@ public final class MappedStatement {
   private String databaseId;
   private Log statementLog;
   private LanguageDriver lang;
-  private Class<? extends ResultSetHandler> resultSetHandlerClass;
+  private boolean lazy;
 
   private MappedStatement() {
     // constructor disabled
@@ -165,8 +165,8 @@ public final class MappedStatement {
       return this;
     }
 
-    public Builder resultSetHandlerClass(Class<? extends ResultSetHandler> resultSetHandlerClass) {
-      mappedStatement.resultSetHandlerClass = resultSetHandlerClass;
+    public Builder lazy(boolean lazy) {
+      mappedStatement.lazy = lazy;
       return this;
     }
 
@@ -268,8 +268,8 @@ public final class MappedStatement {
     return lang;
   }
 
-  public Class<? extends ResultSetHandler> getResultSetHandlerClass() {
-    return resultSetHandlerClass;
+  public boolean isLazy() {
+    return lazy;
   }
 
   public BoundSql getBoundSql(Object parameterObject) {

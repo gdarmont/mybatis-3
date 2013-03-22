@@ -43,4 +43,6 @@ public @interface Options {
   String keyProperty() default "id";
 
   String keyColumn() default "";
+
+  boolean lazy() default false;
 }

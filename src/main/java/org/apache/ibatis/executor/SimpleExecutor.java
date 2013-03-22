@@ -58,7 +58,7 @@ public class SimpleExecutor extends BaseExecutor {
       stmt = prepareStatement(handler, ms.getStatementLog());
       return handler.<E>query(stmt, resultHandler);
     } finally {
-      if (ms.getResultSetHandlerClass() != LazyFastResultSetHandler.class && ms.getResultSetHandlerClass() != LazyNestedResultSetHandler.class) {
+      if (!ms.isLazy()) {
         closeStatement(stmt);
       }
     }

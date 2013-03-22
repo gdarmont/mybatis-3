@@ -282,7 +282,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       String keyColumn,
       String databaseId,
       LanguageDriver lang,
-      Class<? extends ResultSetHandler> resultSetHandlerClass) {
+      boolean lazy) {
     
     if (unresolvedCacheRef) throw new IncompleteElementException("Cache-ref not yet resolved");
     
@@ -299,7 +299,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     statementBuilder.databaseId(databaseId);
     statementBuilder.lang(lang);
     statementBuilder.resultOrdered(resultOrdered);
-    statementBuilder.resultSetHandlerClass(resultSetHandlerClass);
+    statementBuilder.lazy(lazy);
     setStatementTimeout(timeout, statementBuilder);
 
     setStatementParameterMap(parameterMap, parameterType, statementBuilder);

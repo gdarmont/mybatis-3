@@ -53,7 +53,7 @@ public class XmlSqlStatementParser {
     String resultSetType = context.getStringAttribute("resultSetType");
     String fetchSize = context.getStringAttribute("fetchSize");
     String timeout = context.getStringAttribute("timeout");
-    String resultSetHandlerClass = context.getStringAttribute("resultSetHandlerClass");
+    boolean lazy = context.getBooleanAttribute("lazy");
     // 2.x -- String allowRemapping = context.getStringAttribute("remapResults");
 
     if (context.getStringAttribute("xmlResultName") != null) {
@@ -148,13 +148,7 @@ public class XmlSqlStatementParser {
 
     builder.timeout(timeoutInt);
 
-    if (resultSetHandlerClass != null && resultSetHandlerClass.length() != 0) {
-      try {
-        builder.resultSetHandlerClass((Class<? extends ResultSetHandler>) Resources.classForName(resultSetHandlerClass));
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException("Error loading result set handler class.  Cause: " + e, e);
-      }
-    }
+    builder.lazy(lazy);
 
     if (cacheModelName != null) {
       cacheModelName = mapParser.applyNamespace(cacheModelName);

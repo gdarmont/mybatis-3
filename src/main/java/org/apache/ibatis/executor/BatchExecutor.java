@@ -84,7 +84,7 @@ public class BatchExecutor extends BaseExecutor {
       handler.parameterize(stmt);
       return handler.<E>query(stmt, resultHandler);
     } finally {
-      if (ms.getResultSetHandlerClass() != LazyFastResultSetHandler.class && ms.getResultSetHandlerClass() != LazyNestedResultSetHandler.class) {
+      if (!ms.isLazy()) {
         closeStatement(stmt);
       }
     }
