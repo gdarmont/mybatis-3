@@ -53,7 +53,7 @@ public class XmlSqlStatementParser {
     String resultSetType = context.getStringAttribute("resultSetType");
     String fetchSize = context.getStringAttribute("fetchSize");
     String timeout = context.getStringAttribute("timeout");
-    boolean lazy = context.getBooleanAttribute("lazy");
+    boolean lazy = context.getBooleanAttribute("lazy", Boolean.FALSE);
     // 2.x -- String allowRemapping = context.getStringAttribute("remapResults");
 
     if (context.getStringAttribute("xmlResultName") != null) {
