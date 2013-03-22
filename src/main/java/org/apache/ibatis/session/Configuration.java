@@ -441,6 +441,8 @@ public class Configuration {
   public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds, ParameterHandler parameterHandler,
       ResultHandler resultHandler, BoundSql boundSql) {
     ResultSetHandler resultSetHandler = createResultSetHandler(executor, mappedStatement, rowBounds, parameterHandler, resultHandler, boundSql);
+//    ResultSetHandler resultSetHandler = new NestedResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
+    System.out.println("Used ResultSetHandler for " + mappedStatement.getId() + ": " + resultSetHandler.getClass().getSimpleName());
     resultSetHandler = (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
     return resultSetHandler;
   }

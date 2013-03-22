@@ -42,8 +42,8 @@ import org.apache.ibatis.type.TypeHandler;
 
 public class NestedResultSetHandler extends FastResultSetHandler {
 
-  private final Map<CacheKey, Object> objectCache = new HashMap<CacheKey, Object>();
-  private final Map<CacheKey, Object> ancestorCache = new HashMap<CacheKey, Object>();
+  protected final Map<CacheKey, Object> objectCache = new HashMap<CacheKey, Object>();
+  protected final Map<CacheKey, Object> ancestorCache = new HashMap<CacheKey, Object>();
 
   public NestedResultSetHandler(Executor executor, MappedStatement mappedStatement, ParameterHandler parameterHandler, ResultHandler resultHandler, BoundSql boundSql, RowBounds rowBounds) {
     super(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
@@ -243,7 +243,7 @@ public class NestedResultSetHandler extends FastResultSetHandler {
   // UNIQUE RESULT KEY
   //
 
-  private CacheKey createRowKey(ResultMap resultMap, ResultSet rs, String columnPrefix, ResultColumnCache resultColumnCache) throws SQLException {
+  protected CacheKey createRowKey(ResultMap resultMap, ResultSet rs, String columnPrefix, ResultColumnCache resultColumnCache) throws SQLException {
     final CacheKey cacheKey = new CacheKey();
     cacheKey.update(resultMap.getId());
     List<ResultMapping> resultMappings = getResultMappingsForRowKey(resultMap);
