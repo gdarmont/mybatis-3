@@ -450,7 +450,7 @@ public class Configuration {
     ResultSetHandler resultSetHandler;
 
     FetchType fetchType = mappedStatement.getFetchType();
-    if (fetchType == FetchType.DEFAULT) {
+    if (fetchType == null || fetchType == FetchType.DEFAULT) {
       if (mappedStatement.hasNestedResultMaps()) {
         resultSetHandler = new NestedResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql,
                 rowBounds);
