@@ -15,8 +15,6 @@
  */
 package org.apache.ibatis.session;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,9 +49,9 @@ import org.apache.ibatis.executor.loader.CglibProxyFactory;
 import org.apache.ibatis.executor.loader.JavassistProxyFactory;
 import org.apache.ibatis.executor.loader.ProxyFactory;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
+import org.apache.ibatis.executor.resultset.CursorFastResultSetHandler;
 import org.apache.ibatis.executor.resultset.FastResultSetHandler;
-import org.apache.ibatis.executor.resultset.LazyFastResultSetHandler;
-import org.apache.ibatis.executor.resultset.LazyNestedResultSetHandler;
+import org.apache.ibatis.executor.resultset.CursorNestedResultSetHandler;
 import org.apache.ibatis.executor.resultset.NestedResultSetHandler;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.executor.statement.RoutingStatementHandler;
@@ -68,6 +66,7 @@ import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.apache.ibatis.logging.stdout.StdOutImpl;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.Environment;
+import org.apache.ibatis.mapping.FetchType;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMap;
 import org.apache.ibatis.mapping.ResultMap;
@@ -450,19 +449,21 @@ public class Configuration {
   private ResultSetHandler createResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds, ParameterHandler parameterHandler, ResultHandler resultHandler, BoundSql boundSql) {
     ResultSetHandler resultSetHandler;
 
-    if (mappedStatement.isLazy()) {
-      if (mappedStatement.hasNestedResultMaps()) {
-        resultSetHandler = new LazyNestedResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql,
-                rowBounds);
-      } else {
-        resultSetHandler = new LazyFastResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
-      }
-    } else {
+    FetchType fetchType = mappedStatement.getFetchType();
+    if (fetchType == FetchType.DEFAULT) {
       if (mappedStatement.hasNestedResultMaps()) {
         resultSetHandler = new NestedResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql,
                 rowBounds);
       } else {
         resultSetHandler = new FastResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
+      }
+    } else {
+      if (mappedStatement.hasNestedResultMaps()) {
+        resultSetHandler = new CursorNestedResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql,
+                rowBounds, fetchType);
+      } else {
+        resultSetHandler = new CursorFastResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds,
+                fetchType);
       }
     }
 

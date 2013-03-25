@@ -67,6 +67,7 @@ import org.apache.ibatis.executor.keygen.SelectKeyGenerator;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.Discriminator;
+import org.apache.ibatis.mapping.FetchType;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultFlag;
 import org.apache.ibatis.mapping.ResultMapping;
@@ -252,7 +253,7 @@ public class MapperAnnotationBuilder {
       boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
       boolean flushCache = !isSelect;
       boolean useCache = isSelect;
-      boolean lazy = false;
+      FetchType fetchType = FetchType.DEFAULT;
       // TODO Retrive ResultSetHandler from @Options
       Class<ResultSetHandler> resultSetHandlerClass = null;
 
@@ -285,7 +286,7 @@ public class MapperAnnotationBuilder {
         timeout = options.timeout() > -1 ? options.timeout() : null;
         statementType = options.statementType();
         resultSetType = options.resultSetType();
-        lazy = options.lazy();
+        fetchType = options.fetchType();
       }
 
       String resultMapId = null;
@@ -315,7 +316,7 @@ public class MapperAnnotationBuilder {
           keyProperty,
           keyColumn,
           null,
-          languageDriver, lazy);
+          languageDriver, fetchType);
     }
   }
   
@@ -547,7 +548,7 @@ public class MapperAnnotationBuilder {
 
     assistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType, fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass, resultSetTypeEnum,
         flushCache, useCache, false, // TODO issue #577
-        keyGenerator, keyProperty, null, null, languageDriver, false);
+        keyGenerator, keyProperty, null, null, languageDriver, FetchType.DEFAULT);
 
     id = assistant.applyCurrentNamespace(id, false);
 

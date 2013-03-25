@@ -53,7 +53,7 @@ public class XmlSqlStatementParser {
     String resultSetType = context.getStringAttribute("resultSetType");
     String fetchSize = context.getStringAttribute("fetchSize");
     String timeout = context.getStringAttribute("timeout");
-    boolean lazy = context.getBooleanAttribute("lazy", Boolean.FALSE);
+    FetchType fetchType = FetchType.valueOf(context.getStringAttribute("fetchType", FetchType.DEFAULT.toString()));
     // 2.x -- String allowRemapping = context.getStringAttribute("remapResults");
 
     if (context.getStringAttribute("xmlResultName") != null) {
@@ -148,7 +148,7 @@ public class XmlSqlStatementParser {
 
     builder.timeout(timeoutInt);
 
-    builder.lazy(lazy);
+    builder.fetchType(fetchType);
 
     if (cacheModelName != null) {
       cacheModelName = mapParser.applyNamespace(cacheModelName);

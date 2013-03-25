@@ -1,68 +1,113 @@
 package org.apache.ibatis.executor.resultset;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.ibatis.mapping.ResultMap;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
 
 /**
  * @author GDA / GD06186S
  */
 public class LazyList<E> extends AbstractList<E> {
 
-	// ResultSetHandler stuff
-	private final FastResultSetHandler resultSetHandler;
-	private final ResultSet rs;
-	private final ResultMap resultMap;
-	private final FastResultSetHandler.ResultColumnCache resultColumnCache;
-	private final ObjectWrapperResultHandler<E> objectWrapperResultHandler = new ObjectWrapperResultHandler<E>();
+  private final CursorList<E> cursorList;
 
+  // Storage for already fetched elements
 	private final ArrayList<E> storage = new ArrayList<E>();
 
-  private boolean resultSetExhausted = false;
+  /**
+   * Convenient constructor that takes a List, removing the need for an explicit cast.
+   * But list implementation must be CursorList.
+   *
+   * @param cursorList
+   * @throws IllegalArgumentException if list is not a CursorList
+   */
+  public LazyList(List<E> cursorList) {
+    if (!(cursorList instanceof CursorList)) {
+      throw new IllegalArgumentException("A CursorList is mandatory for LazyList");
+    }
+    this.cursorList = (CursorList) cursorList;
+    checkForStartedCursor();
+  }
+
+  public LazyList(CursorList<E> cursorList) {
+    this.cursorList = cursorList;
+    checkForStartedCursor();
+  }
 
   public LazyList(FastResultSetHandler resultSetHandler, ResultSet rs, ResultMap resultMap,
           FastResultSetHandler.ResultColumnCache resultColumnCache) {
-    this.resultSetHandler = resultSetHandler;
-    this.rs = rs;
-		this.resultMap = resultMap;
-		this.resultColumnCache = resultColumnCache;
-	}
+    this(new CursorList<E>(resultSetHandler, rs, resultMap, resultColumnCache));
+  }
+
+  private void checkForStartedCursor() {
+    if (cursorList.isFetchStarted()) {
+      throw new IllegalStateException("Cannot use LazyList on a CursorList with already fetched items. "
+              + "This would leads to a partial view of the result set.");
+    }
+  }
 
 	@Override
 	public E get(int index) {
-		return storage.get(index);
-	}
-
-	@Override
-	public int size() {
-    if (resultSetExhausted) {
-      return storage.size();
-    }
-    throw new UnsupportedOperationException("Cannot retrieve size of a partially fetched lazy list");
+    return getElementAtIndex(index);
   }
 
-  private void closeResultSetAndStatement() {
-    try {
-      if (rs != null) {
-        Statement statement = rs.getStatement();
-
-        rs.close();
-        if (statement != null) {
-          statement.close();
-        }
-      }
-    } catch (SQLException e) {
-      // ignore
+  /**
+   * Retrieve elements from storage if available, or fetch from database.
+   *
+   * @param index index of the element to return
+   * @return element at specified index
+   * @throws IndexOutOfBoundsException if index is higher than elements count.
+   */
+  public E getElementAtIndex(int index) {
+    if (index < storage.size()) {
+      return storage.get(index);
     }
+
+    E object = null;
+    int currentIndex = storage.size() - 1;
+    while (currentIndex < index) {
+      object = cursorList.fetchNextObjectFromDatabase();
+      currentIndex++;
+      if (object != null) {
+        storage.add(object);
+      } else {
+        throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + storage.size());
+      }
+    }
+    return object;
+  }
+
+  private void consumeCursor() {
+    int currentIndex = storage.size();
+    try {
+      while (true) {
+        getElementAtIndex(currentIndex++);
+      }
+    } catch (IndexOutOfBoundsException e) {
+      // Ignore
+    }
+  }
+
+  @Override
+  public int size() {
+    consumeCursor();
+    return storage.size();
+  }
+
+  /**
+   * This toString returns Object's toString default implementation since we don't want AbstractCollection#toString()
+   * to iterate on collection.
+   *
+   * @return a string representation of the object.
+   */
+  @Override
+  public String toString() {
+    return getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(this));
   }
 
   @Override
@@ -70,59 +115,36 @@ public class LazyList<E> extends AbstractList<E> {
     return new LazyIterator();
   }
 
-  private static class ObjectWrapperResultHandler<E> implements ResultHandler {
-
-		private E result;
-
-		@Override
-		public void handleResult(ResultContext context) {
-			this.result = (E) context.getResultObject();
-    }
-  }
-
   private class LazyIterator implements Iterator<E> {
 
     /**
-     * Index of next element to be returned...
+     * Index of element to be returned by subsequent call to next.
      */
     int cursor = 0;
-
+    /**
+     * Holder for the next objet to be returned
+     */
     E object;
 
     @Override
     public boolean hasNext() {
-      boolean hasNext = false;
-
-      boolean isAvailableInStorage = storage.size() > cursor;
-      if (isAvailableInStorage) {
-        object = storage.get(cursor);
-        hasNext = true;
-      } else if (!resultSetExhausted) {
-        // We need to fetch from database
-        try {
-          resultSetHandler.handleRowValues(rs, resultMap, objectWrapperResultHandler, RowBounds.DEFAULT,
-                  resultColumnCache);
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
-
-        object = objectWrapperResultHandler.result;
-        if (object != null) {
-          storage.add(object);
-          objectWrapperResultHandler.result = null;
-          hasNext = true;
-        } else {
-          closeResultSetAndStatement();
-          resultSetExhausted = true;
-        }
+      try {
+        object = getElementAtIndex(cursor);
+      } catch (IndexOutOfBoundsException e) {
+        object = null;
       }
-
-      return hasNext;
+      return object != null;
     }
 
     @Override
     public E next() {
+      // Fill next with object fetched from hasNext()
       E next = object;
+
+      if (next == null) {
+        next = getElementAtIndex(cursor);
+      }
+
       if (next != null) {
         object = null;
         cursor++;
@@ -131,9 +153,9 @@ public class LazyList<E> extends AbstractList<E> {
       throw new NoSuchElementException();
     }
 
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException("Cannot remove element from lazily loaded list");
-    }
-  }
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException("Cannot remove element from lazily loaded list");
+		}
+	}
 }

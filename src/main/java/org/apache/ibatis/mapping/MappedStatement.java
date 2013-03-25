@@ -53,7 +53,7 @@ public final class MappedStatement {
   private String databaseId;
   private Log statementLog;
   private LanguageDriver lang;
-  private boolean lazy;
+  private FetchType fetchType;
 
   private MappedStatement() {
     // constructor disabled
@@ -165,8 +165,8 @@ public final class MappedStatement {
       return this;
     }
 
-    public Builder lazy(boolean lazy) {
-      mappedStatement.lazy = lazy;
+    public Builder fetchType(FetchType fetchType) {
+      mappedStatement.fetchType = fetchType;
       return this;
     }
 
@@ -268,8 +268,8 @@ public final class MappedStatement {
     return lang;
   }
 
-  public boolean isLazy() {
-    return lazy;
+  public FetchType getFetchType() {
+    return fetchType;
   }
 
   public BoundSql getBoundSql(Object parameterObject) {

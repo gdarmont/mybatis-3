@@ -25,10 +25,9 @@ import java.util.List;
 
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
-import org.apache.ibatis.executor.resultset.LazyFastResultSetHandler;
-import org.apache.ibatis.executor.resultset.LazyNestedResultSetHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.FetchType;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
@@ -84,7 +83,7 @@ public class BatchExecutor extends BaseExecutor {
       handler.parameterize(stmt);
       return handler.<E>query(stmt, resultHandler);
     } finally {
-      if (!ms.isLazy()) {
+      if (ms.getFetchType() == FetchType.DEFAULT) {
         closeStatement(stmt);
       }
     }

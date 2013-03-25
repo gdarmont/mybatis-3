@@ -33,6 +33,7 @@ import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.mapping.CacheBuilder;
 import org.apache.ibatis.mapping.Discriminator;
+import org.apache.ibatis.mapping.FetchType;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMap;
 import org.apache.ibatis.mapping.ParameterMapping;
@@ -282,7 +283,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       String keyColumn,
       String databaseId,
       LanguageDriver lang,
-      boolean lazy) {
+      FetchType fetchType) {
     
     if (unresolvedCacheRef) throw new IncompleteElementException("Cache-ref not yet resolved");
     
@@ -299,7 +300,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     statementBuilder.databaseId(databaseId);
     statementBuilder.lang(lang);
     statementBuilder.resultOrdered(resultOrdered);
-    statementBuilder.lazy(lazy);
+    statementBuilder.fetchType(fetchType);
     setStatementTimeout(timeout, statementBuilder);
 
     setStatementParameterMap(parameterMap, parameterType, statementBuilder);
