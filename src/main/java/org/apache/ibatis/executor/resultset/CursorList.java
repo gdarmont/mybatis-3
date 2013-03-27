@@ -89,10 +89,8 @@ public class CursorList<E> extends AbstractList<E> {
 			if (rs != null) {
 				Statement statement = rs.getStatement();
 
-				if (!rs.isClosed()) {
-					rs.close();
-				}
-				if (statement != null && !statement.isClosed()) {
+				rs.close();
+				if (statement != null) {
 					statement.close();
 				}
 			}
