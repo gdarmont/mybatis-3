@@ -26,9 +26,10 @@ public class CursorList<E> extends AbstractList<E> {
 
 	private boolean iteratorAlreadyOpened = false;
 
-  private boolean fetchStarted = false;
+	private boolean fetchStarted = false;
 
-  private boolean resultSetExhausted = false;
+	private boolean resultSetExhausted = false;
+
 	public CursorList(FastResultSetHandler resultSetHandler, ResultSet rs, ResultMap resultMap,
 			FastResultSetHandler.ResultColumnCache resultColumnCache) {
 		this.resultSetHandler = resultSetHandler;
@@ -53,9 +54,9 @@ public class CursorList<E> extends AbstractList<E> {
 		return resultSetExhausted;
 	}
 
-  public boolean isFetchStarted() {
-    return fetchStarted;
-  }
+	public boolean isFetchStarted() {
+		return fetchStarted;
+	}
 
 	@Override
 	public Iterator<E> iterator() {
@@ -66,7 +67,7 @@ public class CursorList<E> extends AbstractList<E> {
 		if (resultSetExhausted) return null;
 
 		try {
-      fetchStarted = true;
+			fetchStarted = true;
 			resultSetHandler.handleRowValues(rs, resultMap, objectWrapperResultHandler, RowBounds.DEFAULT,
 					resultColumnCache);
 		} catch (SQLException e) {
@@ -83,13 +84,15 @@ public class CursorList<E> extends AbstractList<E> {
 		return next;
 	}
 
-	protected void closeResultSetAndStatement() {
+	public void closeResultSetAndStatement() {
 		try {
 			if (rs != null) {
 				Statement statement = rs.getStatement();
 
-				rs.close();
-				if (statement != null) {
+				if (!rs.isClosed()) {
+					rs.close();
+				}
+				if (statement != null && !statement.isClosed()) {
 					statement.close();
 				}
 			}
@@ -128,8 +131,8 @@ public class CursorList<E> extends AbstractList<E> {
 
 		public CursorIterator() {
 			if (iteratorAlreadyOpened) {
-				throw new IllegalStateException("Cannot open more than one iterator on a CursorList. " +
-                "Use LazyList if you want to iterate more than one time.");
+				throw new IllegalStateException("Cannot open more than one iterator on a CursorList. "
+						+ "Use LazyList if you want to iterate more than one time.");
 			}
 			iteratorAlreadyOpened = true;
 		}
