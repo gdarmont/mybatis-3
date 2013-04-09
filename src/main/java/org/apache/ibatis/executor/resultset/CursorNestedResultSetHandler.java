@@ -20,24 +20,25 @@ import org.apache.ibatis.session.RowBounds;
  */
 public class CursorNestedResultSetHandler extends NestedResultSetHandler {
 
-  private final FetchType fetchType;
-  private Object previousRowValue;
+	private final FetchType fetchType;
+	private Object previousRowValue;
 
-  public CursorNestedResultSetHandler(Executor executor, MappedStatement mappedStatement,
-          ParameterHandler parameterHandler, ResultHandler resultHandler, BoundSql boundSql, RowBounds rowBounds, FetchType fetchType) {
-    super(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
-    this.fetchType = fetchType;
-  }
+	public CursorNestedResultSetHandler(Executor executor, MappedStatement mappedStatement,
+			ParameterHandler parameterHandler, ResultHandler resultHandler, BoundSql boundSql, RowBounds rowBounds,
+			FetchType fetchType) {
+		super(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
+		this.fetchType = fetchType;
+	}
 
-  @Override
+	@Override
 	protected void handleResultSet(ResultSet rs, ResultMap resultMap, List<Object> multipleResults,
 			ResultColumnCache resultColumnCache) throws SQLException {
 		if (resultHandler == null) {
-      List cursorList = getResultList(rs, resultMap, resultColumnCache);
-      multipleResults.add(cursorList);
-    } else {
-      throw new IllegalStateException("CursorNestedResultSetHandler cannot be used with external ResultHandler");
-    }
+			List cursorList = getResultList(rs, resultMap, resultColumnCache);
+			multipleResults.add(cursorList);
+		} else {
+			throw new IllegalStateException("CursorNestedResultSetHandler cannot be used with external ResultHandler");
+		}
 	}
 
 	private List getResultList(ResultSet rs, ResultMap resultMap, ResultColumnCache resultColumnCache) {
@@ -51,8 +52,8 @@ public class CursorNestedResultSetHandler extends NestedResultSetHandler {
 		}
 	}
 
-  @Override
-  protected void handleRowValues(ResultSet rs, ResultMap resultMap, ResultHandler resultHandler, RowBounds rowBounds,
+	@Override
+	protected void handleRowValues(ResultSet rs, ResultMap resultMap, ResultHandler resultHandler, RowBounds rowBounds,
 			ResultColumnCache resultColumnCache) throws SQLException {
 		final DefaultResultContext resultContext = new DefaultResultContext();
 		skipRows(rs, rowBounds);
@@ -61,19 +62,27 @@ public class CursorNestedResultSetHandler extends NestedResultSetHandler {
 			final ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(rs, resultMap, null);
 			final CacheKey rowKey = createRowKey(discriminatedResultMap, rs, null, resultColumnCache);
 			Object partialObject = objectCache.get(rowKey);
-			if (partialObject == null && rowValue != null) { // issue #542 delay calling ResultHandler until object ends
-				if (mappedStatement.isResultOrdered()) objectCache.clear(); // issue #577 clear memory if ordered
-				callResultHandler(resultHandler, resultContext, rowValue);
-      }
-      rowValue = getRowValue(rs, discriminatedResultMap, rowKey, rowKey, null, resultColumnCache, partialObject);
-    }
-    // If we have a value and we didn't exit from while because of a stopped context
-		if (rowValue != null && !resultContext.isStopped()) {
-      callResultHandler(resultHandler, resultContext, rowValue);
-      previousRowValue = null;
-    } else if (rowValue != null) {
-      previousRowValue = rowValue;
-    }
+			if (mappedStatement.isResultOrdered()) { // issue #577 && #542
+				if (partialObject == null && rowValue != null) {
+					objectCache.clear();
+					callResultHandler(resultHandler, resultContext, rowValue);
+				}
+				rowValue = getRowValue(rs, discriminatedResultMap, rowKey, rowKey, null, resultColumnCache,
+						partialObject);
+			} else {
+				rowValue = getRowValue(rs, discriminatedResultMap, rowKey, rowKey, null, resultColumnCache,
+						partialObject);
+				if (partialObject == null) {
+					callResultHandler(resultHandler, resultContext, rowValue);
+				}
+			}
+		}
+		if (rowValue != null && mappedStatement.isResultOrdered() && !resultContext.isStopped()) {
+			callResultHandler(resultHandler, resultContext, rowValue);
+			previousRowValue = null;
+		} else if (rowValue != null) {
+			previousRowValue = rowValue;
+		}
 	}
 
 	@Override

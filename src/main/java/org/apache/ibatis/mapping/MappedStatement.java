@@ -176,6 +176,9 @@ public final class MappedStatement {
       assert mappedStatement.sqlSource != null;
       assert mappedStatement.lang != null;
       mappedStatement.resultMaps = Collections.unmodifiableList(mappedStatement.resultMaps);
+      if (mappedStatement.fetchType != null && mappedStatement.fetchType != FetchType.DEFAULT && !mappedStatement.resultOrdered) {
+        throw new IllegalStateException("Fetch type " + mappedStatement.fetchType + " requires \"resultOrdered=true\"");
+      }
       return mappedStatement;
     }
   }
