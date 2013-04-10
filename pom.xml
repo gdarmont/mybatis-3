@@ -100,10 +100,10 @@
   </contributors>
 
   <scm>
-    <url>http://github.com/mybatis/mybatis-3</url>
-    <connection>scm:git:ssh://github.com/mybatis/mybatis-3.git</connection>
-    <developerConnection>scm:git:git+ssh://git@github.com/mybatis/mybatis-3.git</developerConnection>
-    <tag>mybatis-3.2.2</tag>
+    <url>http://git.sid.distribution.edf.fr/projects/OSS/repos/mybatis/browse</url>
+    <connection>scm:git:ssh://git@git.sid.distribution.edf.fr:7999/oss/mybatis.git</connection>
+    <developerConnection>scm:git:ssh://git@git.sid.distribution.edf.fr:7999/oss/mybatis.git</developerConnection>
+    <tag>HEAD</tag>
   </scm>
   <issueManagement>
     <system>GitHub Issue Management</system>
