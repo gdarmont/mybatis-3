@@ -114,6 +114,16 @@
     <url>https://travis-ci.org/mybatis/mybatis-3/</url>
   </ciManagement>
   <distributionManagement>
+    <repository>
+      <id>fr.edf.distribution.linky.nexus</id>
+      <name>Repository ERDF interne Nexus release</name>
+      <url>http://maven.sid.distribution.edf.fr/nexus/content/repositories/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>fr.edf.distribution.linky.nexus</id>
+      <name>Repository ERDF interne Nexus snapshot</name>
+      <url>http://maven.sid.distribution.edf.fr/nexus/content/repositories/snapshots/</url>
+    </snapshotRepository>
     <site>
       <id>github</id>
       <url>gitsite:git@github.com/mybatis/mybatis-3.git</url>
