@@ -248,6 +248,7 @@
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
           <arguments>-Pattach-sources</arguments>
+          <goals>deploy</goals>
         </configuration>
       </plugin>
       <plugin>
