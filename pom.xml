@@ -24,7 +24,7 @@
   </parent>
 
   <artifactId>mybatis</artifactId>
-  <version>3.2.2-erdf-2-SNAPSHOT</version>
+  <version>3.2.2-erdf-2</version>
   <packaging>jar</packaging>
 
   <name>MyBatis</name>
@@ -103,7 +103,7 @@
     <url>http://git.sid.distribution.edf.fr/projects/OSS/repos/mybatis/browse</url>
     <connection>scm:git:ssh://git@git.sid.distribution.edf.fr:7999/oss/mybatis.git</connection>
     <developerConnection>scm:git:ssh://git@git.sid.distribution.edf.fr:7999/oss/mybatis.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>mybatis-3.2.2-erdf-2</tag>
   </scm>
   <issueManagement>
     <system>GitHub Issue Management</system>
