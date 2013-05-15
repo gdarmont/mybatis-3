@@ -137,7 +137,9 @@ public class CursorList<E> extends AbstractList<E> {
 
 		@Override
 		public boolean hasNext() {
-			object = fetchNextObjectFromDatabase();
+			if (object == null) {
+				object = fetchNextObjectFromDatabase();
+			}
 			return object != null;
 		}
 
