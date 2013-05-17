@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.ibatis.submitted.cursorlist;
+package org.apache.ibatis.submitted.cursorlist_fast;
 
 import java.io.Reader;
 import java.sql.Connection;
@@ -30,21 +30,21 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class CursorListTest {
+public class CursorListFastTest {
 
 	private static SqlSessionFactory sqlSessionFactory;
 
 	@BeforeClass
 	public static void setUp() throws Exception {
 		// create a SqlSessionFactory
-		Reader reader = Resources.getResourceAsReader("org/apache/ibatis/submitted/cursorlist/mybatis-config.xml");
+		Reader reader = Resources.getResourceAsReader("org/apache/ibatis/submitted/cursorlist_fast/mybatis-config.xml");
 		sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
 		reader.close();
 
 		// populate in-memory database
 		SqlSession session = sqlSessionFactory.openSession();
 		Connection conn = session.getConnection();
-		reader = Resources.getResourceAsReader("org/apache/ibatis/submitted/cursorlist/CreateDB.sql");
+		reader = Resources.getResourceAsReader("org/apache/ibatis/submitted/cursorlist_fast/CreateDB.sql");
 		ScriptRunner runner = new ScriptRunner(conn);
 		runner.setLogWriter(null);
 		runner.runScript(reader);
@@ -53,7 +53,7 @@ public class CursorListTest {
 	}
 
 	@Test
-	public void shouldGetAUser() {
+	public void shouldGetAllUser() {
 		SqlSession sqlSession = sqlSessionFactory.openSession();
 		try {
 			Mapper mapper = sqlSession.getMapper(Mapper.class);
@@ -74,16 +74,11 @@ public class CursorListTest {
 			Assert.assertFalse(cursorList.isResultSetExhausted());
 
 			User user = iterator.next();
-			Assert.assertEquals(2, user.getGroups().size());
-			Assert.assertEquals(3, user.getRoles().size());
-
+      Assert.assertEquals("User1", user.getName());
 			user = iterator.next();
-			Assert.assertEquals(1, user.getGroups().size());
-			Assert.assertEquals(3, user.getRoles().size());
-
+      Assert.assertEquals("User2", user.getName());
 			user = iterator.next();
-			Assert.assertEquals(3, user.getGroups().size());
-			Assert.assertEquals(1, user.getRoles().size());
+			Assert.assertEquals("User3", user.getName());
 
       // Check no more elements
       Assert.assertTrue(!iterator.hasNext());
